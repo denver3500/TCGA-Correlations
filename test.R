@@ -45,14 +45,25 @@ for(file in rds_files) {
   
   # Compute the pairwise correlation matrix
   cor_matrix <- cor(t(dataCPM_sub), method = "pearson")
-  gene_names_mapped <- gene_metadata[match(rownames(cor_matrix), gene_metadata[, "gene_id"]), "gene_name"]
-  rownames(cor_matrix) <- gene_names_mapped
-  colnames(cor_matrix) <- gene_names_mapped
+  mapping <- read.csv("Gene_name and Protein_name.csv", stringsAsFactors = FALSE)
+  # Remove extra spaces and standardize names to lowercase for matching
+  mapping[, 1] <- tolower(trimws(mapping[, 1]))
+  gene_names <- tolower(trimws(gene_names))
+  gene_names <- mapping[match(gene_names, mapping[, 1]), 2]
+  rownames(cor_matrix) <- gene_names
+  colnames(cor_matrix) <- gene_names
   
   # Generate the correlation plot and save as PNG
   file_name <- paste0("corrplot_", project, ".png")
   png(filename = file_name, width = 1000, height = 800)
-  corrplot(cor_matrix, method = "color", type = "lower", order = "AOE",
+  corrplot(cor_matrix, method = "color", type = "lower",  title = paste("Correlation Comparison for", project),  mar = c(0, 0, 1, 0), 
+           tl.col = "black", tl.srt = 45)
+  dev.off()
+  
+  # Generate the correlation plot and save as PNG
+  file_name <- paste0("corrplot_", project, "_AOE", ".png")
+  png(filename = file_name, width = 1000, height = 800)
+  corrplot(cor_matrix, method = "color", type = "lower", order = "AOE", title = paste("Correlation Comparison for", project),  mar = c(0, 0, 1, 0),
            tl.col = "black", tl.srt = 45)
   dev.off()
 }
